@@ -28,6 +28,20 @@ WAVEDROM_HTML = """
 </div>
 """
 
+class wavedrom(nodes.Admonition, nodes.Element):
+    pass
+
+def latex_visit_wavedrom(self,node):
+    pass
+def latex_dep_wavedrom(self,node):
+    pass
+
+def html_visit_wavedrom(self,node):
+    self.body.append(WAVEDROM_HTML.format(content="\n".join(node["code"])))
+
+def html_dep_wavedrom(self,node):
+    pass
+
 class WavedromDirective(Directive):
     """
     Directive to declare items and their traceability relationships.
@@ -46,10 +60,14 @@ class WavedromDirective(Directive):
     has_content = True
 
     def run(self):
+        # env = self.state.document.settings.env
+        # text = WAVEDROM_HTML.format(content="\n".join(self.content))
+        # content = nodes.raw(text=text, format='html')
+        # return [content]
         env = self.state.document.settings.env
-        text = WAVEDROM_HTML.format(content="\n".join(self.content))
-        content = nodes.raw(text=text, format='html')
-        return [content]
+        node = wavedrom()
+        node["code"] = self.content
+        return [node]
 
 def builder_inited(app):
     """
@@ -97,6 +115,7 @@ def doctree_resolved(app, doctree, fromdocname):
 def setup(app):
     app.add_config_value('offline_skin_js_path', None, 'html')
     app.add_config_value('offline_wavedrom_js_path', None, 'html')
+    app.add_node(wavedrom, html=(html_visit_wavedrom,html_dep_wavedrom))
     app.add_directive('wavedrom', WavedromDirective)
     app.connect('build-finished', build_finished)
     app.connect('builder-inited', builder_inited)
